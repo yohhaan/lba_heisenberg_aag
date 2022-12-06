@@ -157,4 +157,21 @@ set_random_seed()
 print(aag_heisenberg(alice_sizes=[10,2], bob_sizes=[10,4]))
 
 
+# # Imports
 
+# from sage.all import *
+# from sage.algebras.lie_algebras import *
+# from sage.rings.integer_ring import ZZ
+
+# import numpy as np
+# from numpy.random import default_rng
+
+# # Ring base Z/RZ - ZZ.quo(R*ZZ) = Ring of integers modulo R
+# R = ZZ.quo(0*ZZ)
+# # Rank of the Heisenberg Algebra: H^(2n+1)
+# # https://doc.sagemath.org/html/en/reference/algebras/sage/algebras/lie_algebras/heisenberg.html
+# n = sage.all.Integer(1)
+# # Heisenberg Group
+# # https://doc.sagemath.org/html/en/reference/groups/sage/groups/matrix_gps/heisenberg.html
+# H = sage.all.groups.matrix.Heisenberg(n, R)
+# X, Y, Z = H.gens()
