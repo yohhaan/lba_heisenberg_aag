@@ -146,8 +146,89 @@ def aag_heisenberg(alice_sizes, bob_sizes, r=0, printvar = False):
 
 def lba_heisenberg(alice_sizes, bob_sizes, r=0, printvar = False):
     """
+    Run length based attack for heisenberg groups
     """
-    return
+    # Ring base Z/RZ - ZZ.quo(R*ZZ) = Ring of integers modulo R
+    R = ZZ.quo(r*ZZ)
+    # Rank of the Heisenberg Algebra: H^(2n+1)
+    # https://doc.sagemath.org/html/en/reference/algebras/sage/algebras/lie_algebras/heisenberg.html
+    n = sage.all.Integer(1)
+    # Heisenberg Group
+    # https://doc.sagemath.org/html/en/reference/groups/sage/groups/matrix_gps/heisenberg.html
+    H = sage.all.groups.matrix.Heisenberg(n, R)
+    X, Y, Z = H.gens()
+    ## Size of public and private keys for AAG
+    La_size_public = Integer(alice_sizes[0]) # length of Alice's public key
+    La_size_private = Integer(alice_sizes[1]) # length of Alice's private key
+    Lb_size_public = Integer(bob_sizes[0]) # length of Bob's public key
+    Lb_size_private = Integer(bob_sizes[1]) # length of Bob's private key
+
+    a_public_key = generate_aag_public_key(X, Y, Z, La_size_public)
+    b_public_key = generate_aag_public_key(X, Y, Z, Lb_size_public)
+
+    a_private_key, a_drawn_indices, a_exponents = generate_aag_private_key(2*n+1, a_public_key, La_size_private)
+    b_private_key, b_drawn_indices, b_exponents =  generate_aag_private_key(2*n+1, b_public_key, Lb_size_private)
+
+    b_conjugated_public_key = conjugate_public_by_private(a_private_key, b_public_key)
+    a_conjugated_public_key = conjugate_public_by_private(b_private_key, a_public_key)
+
+    a_shared_secret = compute_shared_secret(a_private_key, a_drawn_indices, a_exponents, a_conjugated_public_key) #computed to verify attack is succesfull
+    # b_shared_secret = compute_shared_secret(b_private_key, b_drawn_indices, b_exponents, b_conjugated_public_key)
+
+    # run lba attack to recover Alice's private key
+    a_lba_drawn_indices, a_lba_exponents = lba(a_public_key, b_public_key, b_conjugated_public_key, heisenberg_length)
+    # compute Alice's private key recovered and at the same time do some
+    # computaiton to let us get the shared secret
+    a_lba_private_key = sage.all.identity_matrix(2*n+1) #init with identity and multiply from there
+    lba_temp_secret = sage.all.identity_matrix(2*n+1)
+    for i in range(size_plen(a_lba_drawn_indices)):
+        a_lba_private_key *= public_key[a_lba_drawn_indices[i]]**a_lba_exponents[i]
+        lba_temp_secret *= a_conjugated_public_key[a_lba_drawn_indices[i]]**a_lba_exponents[i]
+    lba_shared_secret = a_lba_private_key**-1 * lba_temp_secret
+
+    return lba_shared_secret == a_shared_secret
+
+def lba(public_key_1, public_key_2, conjugated_public_key_2, length_function):
+    """
+    Run length based attack to recover private_key_1 from material observed.
+    """
+
+def heisenberg_length(x,y,z):
+    """
+    x, y, z such that the corresponding matrix in the Heisenberg group is
+    sage.all.Matrix(ZZ, [[1,x,z], [0,1,y], [0,0,1]]) compute the closed form of
+    the word distance on the discrete Heisenberg group given in
+    https://www.semanticscholar.org/paper/Word-distance-on-the-discrete-Heisenberg-group-Blachere/e5a76207e21df5c30a8803f7a5efc178478a8969
+    """
+    if (z<0):
+        if (x<0):
+            return heisenberg_length(-x,y,-z)
+        else:
+            return heisenberg_length(x,-y,-z)
+    elif (np.abs(y) > np.abs(x)):
+        return heisenberg_length(y,x,z)
+    else:
+        return word_distance(x,y,z)
+
+def word_distance(x,y,z):
+    """See paper for assumptions on sign, etc.
+    https://www.semanticscholar.org/paper/Word-distance-on-the-discrete-Heisenberg-group-Blachere/e5a76207e21df5c30a8803f7a5efc178478a8969
+    """
+    assert z>=0
+    assert x>=0
+    assert np.abs(y)<=np.abs(x)
+    assert (x,y,z) != (0,0,0)
+    if (y>=0):
+        if (x <= np.sqrt(z)):
+            return 2*np.ceil(2*np.sqrt(z))-x-y
+        elif (x*y>=z):
+            return x+y
+        else:
+            return 2*np.ceil(z/x)+x-y
+    elif (x <= np.sqrt(z-x*y)):
+        return 2*np.ceil(2*np.sqrt(z-x*y))-x+y
+    else:
+        return 2*np.ceil(z/x)+x-y
 
 ##################
 # Main
@@ -155,23 +236,3 @@ def lba_heisenberg(alice_sizes, bob_sizes, r=0, printvar = False):
 # Random seed
 set_random_seed()
 print(aag_heisenberg(alice_sizes=[10,2], bob_sizes=[10,4]))
-
-
-# # Imports
-
-# from sage.all import *
-# from sage.algebras.lie_algebras import *
-# from sage.rings.integer_ring import ZZ
-
-# import numpy as np
-# from numpy.random import default_rng
-
-# # Ring base Z/RZ - ZZ.quo(R*ZZ) = Ring of integers modulo R
-# R = ZZ.quo(0*ZZ)
-# # Rank of the Heisenberg Algebra: H^(2n+1)
-# # https://doc.sagemath.org/html/en/reference/algebras/sage/algebras/lie_algebras/heisenberg.html
-# n = sage.all.Integer(1)
-# # Heisenberg Group
-# # https://doc.sagemath.org/html/en/reference/groups/sage/groups/matrix_gps/heisenberg.html
-# H = sage.all.groups.matrix.Heisenberg(n, R)
-# X, Y, Z = H.gens()

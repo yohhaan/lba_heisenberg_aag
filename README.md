@@ -40,7 +40,7 @@ sage: load("filename")
 - [Heisenberg groups as platform for the AAG key-exchange
   protocol](https://arxiv.org/pdf/1403.4165.pdf) (missing details about length
   function used, code not available publicly)
-- [Word distance on the discrete Heisenberg Group](https://doi.org/10.4064/CM95-1-2) (Closed form for length function for $\mathbb{H}_3$)
+- [Word distance on the discrete Heisenberg Group](https://www.semanticscholar.org/paper/Word-distance-on-the-discrete-Heisenberg-group-Blachere/e5a76207e21df5c30a8803f7a5efc178478a8969) (Closed form for length function for $\mathbb{H}_3$)
 - [Wikipedi Heisenberg Group](https://en.wikipedia.org/wiki/Heisenberg_group) & [Geometric Aspects of the Heisenberg
   Group](https://www.math.arizona.edu/~ura-reports/061/Pate.John/Final.pdf)
   (some background on Heisenberg Group)
